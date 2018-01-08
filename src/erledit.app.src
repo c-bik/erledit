@@ -1,0 +1,18 @@
+{application, erledit,
+ [{description, "Erlang Web Editor"},
+  {vsn, "0.0.1"},
+  {registered, []},
+  {mod, { erledit, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    cowboy,
+    jsx
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.

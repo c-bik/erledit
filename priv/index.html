@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Erlang Editor</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <style type="text/css" media="screen">
+        #editor {
+            height: 1000px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div id="editor">-module(test).
+    
+-export([test/0, test1/1]).
+                            
+test1(X) ->
+    ok;
+test1(X) ->
+    ok.
+                                                
+test() ->
+    ok.
+                        
+                </div>
+            </div>
+        </div>
+        <div class="row">
+                <button type="button" class="btn" id="compile">Compile</button>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setMode("ace/mode/erlang");
+        $(function() {
+            $('#compile').click(function() {
+                $.ajax({
+                    type: "POST",
+                    url: "/compile",
+                    data: editor.getValue(),
+                    contentType: 'text/plain',
+                    success : function (data) {
+                        var msgs = {};
+                        data.error.forEach(error => {
+                            var ln = ''+error.line;
+                            if (msgs.hasOwnProperty(ln)) {
+                                msgs[ln] = {type : "error",
+                                            text : msgs[ln].text +'\n'+ error.msg};
+                            } else {
+                                msgs[ln] = {type : "error",
+                                            text : error.msg};
+                            }
+                        });
+                        data.warning.forEach(warning => {
+                            var ln = ''+warning.line;
+                            if (msgs.hasOwnProperty(ln)) {
+                                msgs[ln] = {type : "warning",
+                                            text : msgs[ln].text +'\n'+ warning.msg};
+                            } else {
+                                msgs[ln] = {type : "warning",
+                                            text : warning.msg};
+                            }
+                        });
+                        var annotations = [];
+                        for (var ln in msgs) {
+                            annotations.push({
+                                row: parseInt(ln),
+                                column: 0,
+                                text: msgs[ln].text,
+                                type: msgs[ln].type
+                            });
+                        }
+                        editor.getSession().setAnnotations(annotations);
+                    }
+                });
+            });
+        })
+    </script>
+</body>
+
+</html>
